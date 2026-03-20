@@ -1,8 +1,10 @@
-def handle_start(user_id: int = None) -> str:
+from bot.services.lms import lms_client
+
+async def handle_start(user_id: int = None) -> str:
     """Welcome the user."""
     return "Welcome to the LMS Telegram Bot!\nUse /help to see my available commands."
 
-def handle_help() -> str:
+async def handle_help() -> str:
     """Show available commands."""
     return (
         "Available commands:\n"
@@ -13,16 +15,51 @@ def handle_help() -> str:
         "/scores <lab_id> - View your scores"
     )
 
-def handle_health() -> str:
+async def handle_health() -> str:
     """Check backend connectivity."""
-    return "Checking backend connectivity... (Task 2 will implement this)"
+    try:
+        items = await lms_client.get_items()
+        return f"Backend is healthy. {len(items)} items available."
+    except Exception as e:
+        return str(e)
 
-def handle_labs() -> str:
+async def handle_labs() -> str:
     """List labs from the LMS."""
-    return "Fetching available labs... (Task 2 will implement this)"
+    try:
+        items = await lms_client.get_items()
+        labs = {}
+        for item in items:
+            lab_id = item.get("lab_id")
+            lab_name = item.get("lab_name", lab_id)
+            if lab_id and lab_id not in labs:
+                labs[lab_id] = lab_name
+        
+        if not labs:
+            return "No labs found in the backend."
+        
+        lines = ["Available labs:"]
+        for lid, name in sorted(labs.items()):
+            lines.append(f"- {lid}: {name}")
+        return "\n".join(lines)
+    except Exception as e:
+        return str(e)
 
-def handle_scores(lab_id: str = None) -> str:
+async def handle_scores(lab_id: str = None) -> str:
     """Get student scores for a lab."""
     if not lab_id:
         return "Please specify a lab ID (e.g., /scores lab-1)"
-    return f"Getting scores for {lab_id}... (Task 2 will implement this)"
+    
+    try:
+        rates = await lms_client.get_pass_rates(lab_id)
+        if not rates:
+            return f"No score data found for lab '{lab_id}'."
+            
+        lines = [f"Pass rates for {lab_id}:"]
+        for task in rates:
+            name = task.get("task_name", "Unknown")
+            rate = task.get("pass_rate", 0) * 100
+            attempts = task.get("attempts", 0)
+            lines.append(f"- {name}: {rate:.1f}% ({attempts} attempts)")
+        return "\n".join(lines)
+    except Exception as e:
+        return str(e)
