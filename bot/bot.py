@@ -3,7 +3,7 @@ import argparse
 import os
 import asyncio
 from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
 # Ensure the parent directory is in sys.path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -17,9 +17,10 @@ from bot.handlers.commands import (
     handle_labs, 
     handle_scores
 )
+from bot.handlers.router import route_intent
 from bot.config import config
 
-# Telegram Command Handlers (Transport Layer)
+# Telegram Command Handlers
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response = await handle_start(update.effective_user.id)
     await update.message.reply_text(response)
@@ -41,26 +42,35 @@ async def scores(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response = await handle_scores(lab_id)
     await update.message.reply_text(response)
 
+# Plain text message handler (LLM Router)
+async def plain_text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_text = update.message.text
+    response = await route_intent(user_text)
+    await update.message.reply_text(response)
+
 # Test Mode Interface
 async def test_mode(query: str):
     """Offline test mode to verify handler logic without Telegram."""
-    parts = query.split()
-    cmd = parts[0].lstrip('/')
-    args = parts[1:]
-    
-    if cmd == "start":
-        print(await handle_start())
-    elif cmd == "help":
-        print(await handle_help())
-    elif cmd == "health":
-        print(await handle_health())
-    elif cmd == "labs":
-        print(await handle_labs())
-    elif cmd == "scores":
-        lab_id = args[0] if args else None
-        print(await handle_scores(lab_id))
+    if query.startswith('/'):
+        parts = query.split()
+        cmd = parts[0].lstrip('/')
+        args = parts[1:]
+        
+        if cmd == "start":
+            print(await handle_start())
+        elif cmd == "help":
+            print(await handle_help())
+        elif cmd == "health":
+            print(await handle_health())
+        elif cmd == "labs":
+            print(await handle_labs())
+        elif cmd == "scores":
+            lab_id = args[0] if args else None
+            print(await handle_scores(lab_id))
+        else:
+            print(await route_intent(query))
     else:
-        print(f"Unknown command: {cmd}")
+        print(await route_intent(query))
 
 def main():
     parser = argparse.ArgumentParser(description="LMS Telegram Bot")
@@ -83,6 +93,9 @@ def main():
     application.add_handler(CommandHandler("health", health))
     application.add_handler(CommandHandler("labs", labs_command))
     application.add_handler(CommandHandler("scores", scores))
+    
+    # Handle all non-command text with the LLM router
+    application.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), plain_text_handler))
 
     print("Bot is starting...")
     application.run_polling()
