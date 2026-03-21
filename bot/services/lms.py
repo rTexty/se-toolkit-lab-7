@@ -38,8 +38,6 @@ class LMSClient:
             except httpx.RequestError as e:
                 raise Exception(f"Backend error: {str(e)}.")
 
-lms_client = LMSClient()
-
     async def get_learners(self):
         """Fetch learners from /learners/."""
         async with httpx.AsyncClient() as client:
@@ -51,3 +49,6 @@ lms_client = LMSClient()
                 raise Exception(f"Backend error: HTTP {e.response.status_code} {e.response.reason_phrase}.")
             except httpx.RequestError as e:
                 raise Exception(f"Backend error: {str(e)}.")
+
+
+lms_client = LMSClient()
