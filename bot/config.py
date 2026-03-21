@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv(".env.bot.secret")
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env.bot.secret'))
 
 class Config:
     BOT_TOKEN = os.getenv("BOT_TOKEN", "placeholder_token")

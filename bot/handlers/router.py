@@ -1,7 +1,7 @@
 import json
 import sys
-from bot.services.llm import llm_client
-from bot.services.lms import lms_client
+from services.llm import llm_client
+from services.lms import lms_client
 
 TOOLS = [
     {
