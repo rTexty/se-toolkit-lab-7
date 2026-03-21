@@ -29,17 +29,15 @@ async def handle_labs() -> str:
         items = await lms_client.get_items()
         labs = {}
         for item in items:
-            lab_id = item.get("lab_id")
-            lab_name = item.get("lab_name", lab_id)
-            if lab_id and lab_id not in labs:
-                labs[lab_id] = lab_name
+            if item.get("type") == "lab":
+                labs[item.get("id")] = item.get("title", f"Lab {item.get('id')}")
         
         if not labs:
             return "No labs found in the backend."
         
         lines = ["Available labs:"]
         for lid, name in sorted(labs.items()):
-            lines.append(f"- {lid}: {name}")
+            lines.append(f"- {name}")
         return "\n".join(lines)
     except Exception as e:
         return str(e)
@@ -56,8 +54,8 @@ async def handle_scores(lab_id: str = None) -> str:
             
         lines = [f"Pass rates for {lab_id}:"]
         for task in rates:
-            name = task.get("task_name", "Unknown")
-            rate = task.get("pass_rate", 0) * 100
+            name = task.get("task", "Unknown")
+            rate = task.get("avg_score", 0)
             attempts = task.get("attempts", 0)
             lines.append(f"- {name}: {rate:.1f}% ({attempts} attempts)")
         return "\n".join(lines)
