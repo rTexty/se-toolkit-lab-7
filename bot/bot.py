@@ -2,7 +2,7 @@ import sys
 import argparse
 import os
 import asyncio
-from telegram import Update
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
 # Ensure the parent directory is in sys.path
@@ -23,30 +23,42 @@ from bot.config import config
 # Telegram Command Handlers
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response = await handle_start(update.effective_user.id)
-    await update.message.reply_text(response)
+    keyboard = [[InlineKeyboardButton("More Info", callback_data="more_info")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(response, reply_markup=reply_markup)
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response = await handle_help()
-    await update.message.reply_text(response)
+    keyboard = [[InlineKeyboardButton("More Info", callback_data="more_info")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(response, reply_markup=reply_markup)
 
 async def health(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response = await handle_health()
-    await update.message.reply_text(response)
+    keyboard = [[InlineKeyboardButton("More Info", callback_data="more_info")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(response, reply_markup=reply_markup)
 
 async def labs_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response = await handle_labs()
-    await update.message.reply_text(response)
+    keyboard = [[InlineKeyboardButton("More Info", callback_data="more_info")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(response, reply_markup=reply_markup)
 
 async def scores(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lab_id = "".join(context.args) if context.args else None
     response = await handle_scores(lab_id)
-    await update.message.reply_text(response)
+    keyboard = [[InlineKeyboardButton("More Info", callback_data="more_info")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(response, reply_markup=reply_markup)
 
 # Plain text message handler (LLM Router)
 async def plain_text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
     response = await route_intent(user_text)
-    await update.message.reply_text(response)
+    keyboard = [[InlineKeyboardButton("More Info", callback_data="more_info")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(response, reply_markup=reply_markup)
 
 # Test Mode Interface
 async def test_mode(query: str):

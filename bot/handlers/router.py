@@ -26,7 +26,63 @@ TOOLS = [
             }
         }
     }
-    # (Other 7 tools can be added similarly)
+,
+    {
+        "type": "function",
+        "function": {
+            "name": "get_learners",
+            "description": "Get all learners from the LMS.",
+            "parameters": {"type": "object", "properties": {}}
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "enroll_learner",
+            "description": "Enroll a learner in the LMS.",
+            "parameters": {"type": "object", "properties": {"learner_name": {"type": "string"}}}
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_active_sprint",
+            "description": "Get current active sprint.",
+            "parameters": {"type": "object", "properties": {}}
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_course_info",
+            "description": "Information about the course.",
+            "parameters": {"type": "object", "properties": {}}
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "update_lab_status",
+            "description": "Update the status of a lab.",
+            "parameters": {"type": "object", "properties": {"lab_id": {"type": "string"}}}
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_system_health",
+            "description": "Check if the backend is alive.",
+            "parameters": {"type": "object", "properties": {}}
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_user_profile",
+            "description": "Get profile of a specific user.",
+            "parameters": {"type": "object", "properties": {"user_id": {"type": "string"}}}
+        }
+    }
 ]
 
 async def route_intent(user_message: str) -> str:
@@ -57,6 +113,8 @@ async def route_intent(user_message: str) -> str:
                     result = await lms_client.get_items()
                 elif func_name == "get_pass_rates":
                     result = await lms_client.get_pass_rates(args.get("lab"))
+                elif func_name == "get_learners":
+                    result = await lms_client.get_learners()
                 else:
                     result = f"Error: Tool {func_name} not implemented."
                 
